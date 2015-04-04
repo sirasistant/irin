@@ -17,6 +17,10 @@ public:
     CIri3Controller (const char* pch_name, CEpuck* pc_epuck, int n_write_to_file);
     ~CIri3Controller();
     void SimulationStep(unsigned n_step_number, double f_time, double f_step_interval);
+    void setRobotIndex(int index);
+    void setRobotAmount(int amount);
+    void setAssignedLights(int* assignedLights);
+    void setCollectionBoard(int* board);
 
 private:
     CEpuck* m_pcEpuck;
@@ -43,6 +47,10 @@ private:
 	double 		m_fRightSpeed;
 	double**	m_fActivationTable;
 	double 		m_fTime;
+	int 		m_robotIndex;
+	int 		robotAmount;
+	int*		assignedLights;
+	int* 		collectionBoard;
 
 	int m_nWriteToFile;
 
@@ -53,6 +61,7 @@ private:
 	void ChargeBattery ( unsigned int un_priority );
 	void CollectResources ( unsigned int un_priority );
 	void HelpPartner ( unsigned int un_priority );
+	
 };
 
 #endif

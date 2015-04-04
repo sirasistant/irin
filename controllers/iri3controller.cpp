@@ -362,5 +362,20 @@ void CIri3Controller::HelpPartner ( unsigned int un_priority )
 		/* END WRITE TO FILES */
 	}
 }
+    //Setter methods
+   void CIri3Controller::setRobotIndex(int index){
+       m_robotIndex=index;
+   }
+   void CIri3Controller::setRobotAmount(int amount){
+       robotAmount=amount;
+   }
+   void CIri3Controller::setAssignedLights(int* lights){
+       assignedLights=lights;
+   }
+   void CIri3Controller::setCollectionBoard(int* board){
+       collectionBoard=board;
+   }
+
+
 
 

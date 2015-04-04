@@ -405,7 +405,9 @@ void CIri3Exp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CIri3Controller(pchTemp, pc_epuck, m_nWriteToFile);
+
+    CIri3Controller* pcController = new CIri3Controller(pchTemp, pc_epuck, m_nWriteToFile);
+    pcController->setRobotAmount(m_nRobotsNumber);
 	pc_epuck->SetControllerType( CONTROLLER_IRI3 );
 	pc_epuck->SetController(pcController);
 
