@@ -120,6 +120,7 @@ void CIri3Controller::SimulationStep(unsigned n_step_number, double f_time, doub
 
 	/* Execute Coordinator */
 	Coordinator();
+    printf("Robot index: %i Total robot: %i",m_robotIndex,robotAmount);
 
 	/* Set Speed to wheels */
 	m_acWheels->SetSpeed(m_fLeftSpeed, m_fRightSpeed);
@@ -367,6 +368,7 @@ void CIri3Controller::HelpPartner ( unsigned int un_priority )
        m_robotIndex=index;
    }
    void CIri3Controller::setRobotAmount(int amount){
+       printf("set amount to %i",amount);
        robotAmount=amount;
    }
    void CIri3Controller::setAssignedLights(int* lights){

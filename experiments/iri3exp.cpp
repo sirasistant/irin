@@ -39,6 +39,8 @@
 
 using namespace std;
 
+#define LIGHT_AMOUNT 2
+
 /*Create Arena */
 static char* pchHeightMap = 
 //"%%%%%%%%%%%%%%%%%%%%"
@@ -407,10 +409,13 @@ void CIri3Exp::SetController(CEpuck* pc_epuck)
 	sprintf(pchTemp, "Iri1");
 
     CIri3Controller* pcController = new CIri3Controller(pchTemp, pc_epuck, m_nWriteToFile);
-    pcController->setRobotAmount(m_nRobotsNumber);
+    pcController->setRobotAmount(m_robotAmount);
+    pcController->setRobotIndex( m_robotCounter);
+    pcController->setAssignedLights(m_lightAssignments);
+    pcController->setCollectionBoard(m_leaderBoard);
 	pc_epuck->SetControllerType( CONTROLLER_IRI3 );
 	pc_epuck->SetController(pcController);
-
+    m_robotCounter++;
 }
 
 /******************************************************************************/
@@ -418,8 +423,20 @@ void CIri3Exp::SetController(CEpuck* pc_epuck)
 
 void CIri3Exp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
+    //Init scenario
+    m_robotCounter=0; //init the robot iterator
+    m_robotAmount=m_nRobotsNumber; //save the robot amount
+    m_leaderBoard=new int[m_robotAmount]; //init the leaderboard
+    m_lightAssignments= new int[m_robotAmount]; //init the assignments array
+    for(int i=0;i<m_robotAmount;i++){ //set the leaderboard to zeros and distribute equally the lights
+        m_leaderBoard[i]=0;
+        m_lightAssignments[i]=i%LIGHT_AMOUNT;
+    }
+    //end init scenario
+
 	/* Create and add epucks */
 	char label[100] = "epuck";    
+
 	for (int i = 0; i < m_nRobotsNumber; i++)
 	{
 		sprintf(label, "epuck%0.4d", i);
