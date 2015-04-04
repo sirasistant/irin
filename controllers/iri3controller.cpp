@@ -33,12 +33,13 @@ extern long int rngSeed;
 
 using namespace std;
 
-#define BEHAVIORS	4
+#define BEHAVIORS 5
 
-#define AVOID_PRIORITY 		0
-#define CHARGE_PRIORITY 	1
-#define COLLECT_PRIORITY 2
-#define HELP_PRIORITY 3
+#define AVOID_PRIORITY 0
+#define CHARGE_PRIORITY 1
+#define RETURN_PRIORITY 2
+#define COLLECT_PRIORITY 3
+#define HELP_PRIORITY 4
 
 #define PROXIMITY_THRESHOLD 0.3
 #define BATTERY_THRESHOLD 0.5
@@ -156,6 +157,7 @@ void CIri3Controller::ExecuteBehaviors ( void )
 	
 	AvoidObstacles ( AVOID_PRIORITY );
   	ChargeBattery ( CHARGE_PRIORITY );
+  	ReturnToBase ( RETURN_PRIORITY );
 	CollectResources ( COLLECT_PRIORITY );
 	HelpPartner ( HELP_PRIORITY );
 }
@@ -199,7 +201,7 @@ void CIri3Controller::Coordinator ( void )
   m_fLeftSpeed  = fVLinear - fC1 * fVAngular;
   m_fRightSpeed = fVLinear + fC1 * fVAngular;
 
-  printf("LEFT: %2f, %2f\n", m_fLeftSpeed, m_fRightSpeed);
+  printf("WHEELS: %2f, %2f\n", m_fLeftSpeed, m_fRightSpeed);
 	if (m_nWriteToFile ) 
 	{
 		/* INIT: WRITE TO FILES */
@@ -274,6 +276,31 @@ void CIri3Controller::AvoidObstacles ( unsigned int un_priority )
 
 void CIri3Controller::CollectResources ( unsigned int un_priority )
 {
+	  /* Direction Angle 0.0 and always active. We set its vector intensity to 0.5 if used */
+	m_fActivationTable[un_priority][0] = 0.0;
+	m_fActivationTable[un_priority][1] = 0.5;
+	m_fActivationTable[un_priority][2] = 1.0;
+
+	if (m_nWriteToFile ) 
+	{
+		/* INIT: WRITE TO FILES */
+		/* Write level of competence ouputs */
+		FILE* fileOutput = fopen("outputFiles/resourcesOutput", "a");
+		fprintf(fileOutput,"%2.4f %2.4f %2.4f %2.4f \n", m_fTime, m_fActivationTable[un_priority][2], m_fActivationTable[un_priority][0], m_fActivationTable[un_priority][1]);
+		fclose(fileOutput);
+		/* END WRITE TO FILES */
+	}
+}
+
+/******************************************************************************/
+/******************************************************************************/
+
+void CIri3Controller::ReturnToBase ( unsigned int un_priority )
+{
+	  /* Direction Angle 0.0 and always active. We set its vector intensity to 0.5 if used */
+	m_fActivationTable[un_priority][0] = 0.0;
+	m_fActivationTable[un_priority][1] = 0.5;
+	m_fActivationTable[un_priority][2] = 1.0;
 
 	if (m_nWriteToFile ) 
 	{
@@ -336,6 +363,7 @@ void CIri3Controller::ChargeBattery ( unsigned int un_priority )
     m_fActivationTable[un_priority][2] = 1.0;
 	}	
 
+	printf("BATTERY: %2f, %2f\n", battery[0]);
 	if (m_nWriteToFile ) 
 	{
 		/* INIT WRITE TO FILE */
@@ -352,6 +380,10 @@ void CIri3Controller::ChargeBattery ( unsigned int un_priority )
 
 void CIri3Controller::HelpPartner ( unsigned int un_priority )
 {
+		  /* Direction Angle 0.0 and always active. We set its vector intensity to 0.5 if used */
+	m_fActivationTable[un_priority][0] = 0.0;
+	m_fActivationTable[un_priority][1] = 0.5;
+	m_fActivationTable[un_priority][2] = 1.0;
 
 	if (m_nWriteToFile ) 
 	{
