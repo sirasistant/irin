@@ -144,7 +144,7 @@ void CIri3Controller::SimulationStep(unsigned n_step_number, double f_time, doub
 /******************************************************************************/
 /******************************************************************************/
 
-void CIri1Controller::ExecuteBehaviors ( void )
+void CIri3Controller::ExecuteBehaviors ( void )
 {
 	for ( int i = 0 ; i < BEHAVIORS ; i++ )
 	{
@@ -162,7 +162,7 @@ void CIri1Controller::ExecuteBehaviors ( void )
 /******************************************************************************/
 /******************************************************************************/
 
-void CIri1Controller::Coordinator ( void )
+void CIri3Controller::Coordinator ( void )
 {
   int nBehavior;
   double fAngle = 0.0;
@@ -213,7 +213,7 @@ void CIri1Controller::Coordinator ( void )
 /******************************************************************************/
 /******************************************************************************/
 
-void CIri1Controller::AvoidObstacles ( unsigned int un_priority )
+void CIri3Controller::AvoidObstacles ( unsigned int un_priority )
 {
 	
 	/* Leer Sensores de Proximidad */
@@ -271,7 +271,7 @@ void CIri1Controller::AvoidObstacles ( unsigned int un_priority )
 /******************************************************************************/
 /******************************************************************************/
 
-void CIri1Controller::CollectResources ( unsigned int un_priority )
+void CIri3Controller::CollectResources ( unsigned int un_priority )
 {
 
 	if (m_nWriteToFile ) 
@@ -288,7 +288,7 @@ void CIri1Controller::CollectResources ( unsigned int un_priority )
 /******************************************************************************/
 /******************************************************************************/
 
-void CIri1Controller::ChargeBattery ( unsigned int un_priority )
+void CIri3Controller::ChargeBattery ( unsigned int un_priority )
 {
 	/* Leer Battery Sensores */
 	double* battery = m_seBattery->GetSensorReading(m_pcEpuck);
@@ -349,7 +349,7 @@ void CIri1Controller::ChargeBattery ( unsigned int un_priority )
 /******************************************************************************/
 /******************************************************************************/
 
-void CIri1Controller::HelpPartner ( unsigned int un_priority )
+void CIri3Controller::HelpPartner ( unsigned int un_priority )
 {
 
 	if (m_nWriteToFile ) 
