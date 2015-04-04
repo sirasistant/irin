@@ -14,7 +14,7 @@
 
 
 
-
+VPATH = .
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
   case $${target_option-} in \
@@ -197,12 +197,12 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/asistant/Desktop/irsim_v1/missing aclocal-1.14
+ACLOCAL = ${SHELL} /home/thunkar/Documents/Shared/irsim_v1/missing aclocal-1.14
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/asistant/Desktop/irsim_v1/missing autoconf
-AUTOHEADER = ${SHELL} /home/asistant/Desktop/irsim_v1/missing autoheader
-AUTOMAKE = ${SHELL} /home/asistant/Desktop/irsim_v1/missing automake-1.14
+AUTOCONF = ${SHELL} /home/thunkar/Documents/Shared/irsim_v1/missing autoconf
+AUTOHEADER = ${SHELL} /home/thunkar/Documents/Shared/irsim_v1/missing autoheader
+AUTOMAKE = ${SHELL} /home/thunkar/Documents/Shared/irsim_v1/missing automake-1.14
 AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -227,7 +227,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/asistant/Desktop/irsim_v1/missing makeinfo
+MAKEINFO = ${SHELL} /home/thunkar/Documents/Shared/irsim_v1/missing makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = twodeepuck
@@ -243,10 +243,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 0.0.0
-abs_builddir = /home/asistant/Desktop/irsim_v1/controllers
-abs_srcdir = /home/asistant/Desktop/irsim_v1/controllers
-abs_top_builddir = /home/asistant/Desktop/irsim_v1
-abs_top_srcdir = /home/asistant/Desktop/irsim_v1
+abs_builddir = /home/thunkar/Documents/Shared/irsim_v1/controllers
+abs_srcdir = /home/thunkar/Documents/Shared/irsim_v1/controllers
+abs_top_builddir = /home/thunkar/Documents/Shared/irsim_v1
+abs_top_srcdir = /home/thunkar/Documents/Shared/irsim_v1
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
@@ -266,7 +266,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/asistant/Desktop/irsim_v1/install-sh
+install_sh = ${SHELL} /home/thunkar/Documents/Shared/irsim_v1/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale

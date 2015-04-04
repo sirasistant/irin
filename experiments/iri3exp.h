@@ -32,10 +32,6 @@ private:
 		double* m_fRobotOrientations;
 		int m_nRunTime;
 
-		int m_robotAmount;
-		int m_robotCounter;
-		int* m_leaderBoard;
-		int* m_lightAssignments;
 		/* Environment */
 		int m_nLightObjectNumber;
 		dVector2 *m_pcvLightObjects;
