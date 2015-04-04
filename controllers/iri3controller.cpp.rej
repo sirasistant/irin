@@ -1,0 +1,9 @@
+diff a/controllers/iri3controller.cpp b/controllers/iri3controller.cpp	(rejected hunks)
+@@ -121,7 +121,6 @@
+ 
+ 	/* Execute Coordinator */
+ 	Coordinator();
+-    printf("Robot index: %i Total robot: %i",m_robotIndex,robotAmount);
+ 
+ 	/* Set Speed to wheels */
+ 	m_acWheels->SetSpeed(m_fLeftSpeed, m_fRightSpeed);
