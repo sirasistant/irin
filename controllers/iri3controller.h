@@ -13,15 +13,21 @@
 class CIri3Controller : public CController
 {
 public:
+	struct _SimpleBase {
+	    double centerX;
+	    double centerY;
+	    double radius;
+	}; 
+    typedef struct _SimpleBase SimpleBase;
 
     CIri3Controller (const char* pch_name, CEpuck* pc_epuck, int n_write_to_file);
     ~CIri3Controller();
     void SimulationStep(unsigned n_step_number, double f_time, double f_step_interval);
     void setRobotIndex(int index);
     void setRobotAmount(int amount);
-    void setAssignedLights(int* assignedLights);
+    void setAssignedBases(int* assignedBases);
     void setCollectionBoard(int* board);
-
+    void setBases(SimpleBase* bases);
 private:
     CEpuck* m_pcEpuck;
     
@@ -38,7 +44,7 @@ private:
 	CRedBatterySensor* m_seRedBattery;  
 	CEncoderSensor* m_seEncoder;  
 	CCompassSensor* m_seCompass;  
-
+	
     float m_fOrientation; 
     dVector2 m_vPosition;
 
@@ -49,12 +55,13 @@ private:
 	double 		m_fTime;
 	int 		m_robotIndex;
 	int 		robotAmount;
-	int*		assignedLights;
+	int*		assignedBases;
 	int* 		collectionBoard;
 	double		m_lastGround;
 	int 		m_ticksSinceScore;
 	int 		m_nWriteToFile;
 	int 		m_cargoBayLoad;
+	SimpleBase*	m_bases;
 
 	void ExecuteBehaviors ( void );
 	void Coordinator ( void );
@@ -66,6 +73,10 @@ private:
 	void HelpPartner ( unsigned int un_priority );
 	void readBaseNeeds (double* baseNeeds);
 	double readCargoBaySensor();
+	void dropPayload();
+	int getBaseUnderRobot();
+	double* readBaseLights(int baseNumber);
+	double Distance(double dX0, double dY0, double dX1, double dY1);
 };
 
 #endif

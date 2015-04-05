@@ -5,15 +5,15 @@
 /******************************************************************************/
 
 #include "experiment.h"
-
 /******************************************************************************/
 /******************************************************************************/
 
 class CIri3Exp : public CExperiment
 {
 public:
-    CIri3Exp ( const char* pch_name , const char* paramsFile );
+        CIri3Exp ( const char* pch_name , const char* paramsFile );
 		~CIri3Exp ( void );
+	
 protected:
     // Overwritten from the superclasses:
     CArena* CreateArena();
@@ -35,7 +35,12 @@ private:
 		int m_robotAmount;
 		int m_robotCounter;
 		int* m_leaderBoard;
-		int* m_lightAssignments;
+		int* m_baseAssignments;
+		double* centerX;
+		double* centerY;
+		double* radius;
+		
+
 		/* Environment */
 		int m_nLightObjectNumber;
 		dVector2 *m_pcvLightObjects;

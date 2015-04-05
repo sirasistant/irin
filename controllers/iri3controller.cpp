@@ -6,6 +6,8 @@
 #include <gsl/gsl_randist.h>
 #include <sys/time.h>
 #include <iostream>
+#include <cmath>
+
 
 /******************** Simulator ****************/
 /******************** Sensors ******************/
@@ -48,6 +50,8 @@ using namespace std;
 #define BASE_AMOUNT 2
 #define SCORE_SPACING 40
 #define MAX_CARGO_LOAD 3
+
+
 
 CIri3Controller::CIri3Controller (const char* pch_name, CEpuck* pc_epuck, int n_write_to_file) : CController (pch_name, pc_epuck)
 
@@ -117,8 +121,8 @@ void CIri3Controller::setRobotAmount(int amount){
     printf("set amount to %i",amount);
     robotAmount=amount;
 }
-void CIri3Controller::setAssignedLights(int* lights){
-    assignedLights=lights;
+void CIri3Controller::setAssignedBases(int* bases){
+    assignedBases=bases;
 }
 void CIri3Controller::setCollectionBoard(int* board){
     collectionBoard=board;
@@ -309,8 +313,7 @@ void CIri3Controller::CollectResources ( unsigned int un_priority )
 
     if(m_lastGround==1.0&&ground[0]==0.5){
         //detected base area entering
-        collectionBoard[assignedLights[m_robotIndex]]+= m_cargoBayLoad; //Drop the load
-        m_cargoBayLoad =0 ;
+        dropPayload();
     }
     m_lastGround=ground[0];
     /* Direction Angle 0.0 and always active. We set its vector intensity to 0.5 if used */
@@ -461,5 +464,51 @@ void CIri3Controller::readBaseNeeds (double* baseNeeds) {
 double CIri3Controller::readCargoBaySensor(){
     return m_cargoBayLoad/MAX_CARGO_LOAD;
 }
+
+void CIri3Controller::dropPayload(){
+    //find out in which base is standing (non robot work, scenario related)
+    int base=getBaseUnderRobot();
+
+    //drop the load
+    collectionBoard[base]+= m_cargoBayLoad;
+    m_cargoBayLoad =0 ;
+}
+
+void CIri3Controller::setBases(SimpleBase* bases){
+    m_bases=bases;
+}
+
+int CIri3Controller::getBaseUnderRobot(){
+    for(int i=0;i<BASE_AMOUNT;i++){
+        double distance=Distance(m_bases[i].centerX,m_bases[i].centerY,m_pcEpuck->GetPosition().x,m_pcEpuck->GetPosition().y);
+        double radius=m_bases[i].radius;
+        if(abs(distance)<abs(radius)){
+            return i;
+        }
+    }
+    return -1;
+
+}
+/*
+ * This method assigns a basenumber to a light, if paramfile layout is modified, this method
+ * should be modified accordingly, since basenumbers are an integer that represents
+ * the position of each base in the paramfile
+ *
+*/
+double* CIri3Controller::readBaseLights(int baseNumber){
+    if(baseNumber==0){
+        return m_seRedLight->GetSensorReading(m_pcEpuck);
+    }else{
+        return m_seBlueLight->GetSensorReading(m_pcEpuck);
+
+    }
+}
+
+double CIri3Controller::Distance(double dX0, double dY0, double dX1, double dY1)
+{
+    return sqrt((dX1 - dX0)*(dX1 - dX0) + (dY1 - dY0)*(dY1 - dY0));
+}
+
+
 
 

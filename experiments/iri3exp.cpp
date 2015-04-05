@@ -201,6 +201,12 @@ CIri3Exp::CIri3Exp(const char* pch_name, const char* paramsFile) :
 		m_fGroundAreaInternalRadius = new double[m_nNumberOfGroundArea];
 		m_fGroundAreaColor = new double[m_nNumberOfGroundArea];
 
+        //Recover data for base creation
+
+        centerX=new double[ m_nNumberOfGroundArea ];
+        centerY=new double[ m_nNumberOfGroundArea ];
+        radius=new double[ m_nNumberOfGroundArea ];
+        int j=0;
 		for ( int i = 0 ; i < m_nNumberOfGroundArea ; i++)
 		{
 			m_vGroundAreaCenter[i].x = getDouble('=',pfile);
@@ -208,7 +214,12 @@ CIri3Exp::CIri3Exp(const char* pch_name, const char* paramsFile) :
 			m_fGroundAreaInternalRadius[i] = 0.0;
 			m_fGroundAreaExternalRadius[i] = getDouble('=',pfile);
 			m_fGroundAreaColor[i] = getDouble('=',pfile);
-
+            if(m_fGroundAreaColor[i]==0.5){
+                centerX[j]=m_vGroundAreaCenter[i].x;
+                centerY[j]=m_vGroundAreaCenter[i].y;
+                radius[j]=m_fGroundAreaExternalRadius[i];
+                j++;
+            }
 		}
 		
 		/* SENSORS */
@@ -314,6 +325,8 @@ CArena* CIri3Exp::CreateArena()
 		groundArea->SetColor(m_fGroundAreaColor[i]);
 		groundArea->SetHeight(0.20);
 		pcArena->AddGroundArea(groundArea);
+
+
 	}
 
 	return pcArena;
@@ -407,12 +420,18 @@ void CIri3Exp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-
     CIri3Controller* pcController = new CIri3Controller(pchTemp, pc_epuck, m_nWriteToFile);
     pcController->setRobotAmount(m_robotAmount);
     pcController->setRobotIndex( m_robotCounter);
-    pcController->setAssignedLights(m_lightAssignments);
+    pcController->setAssignedBases(m_baseAssignments);
     pcController->setCollectionBoard(m_leaderBoard);
+    CIri3Controller::SimpleBase bases[LIGHT_AMOUNT];
+    for(int i=0;i<LIGHT_AMOUNT;i++){
+        bases[i].centerX=centerX[i];
+        bases[i].centerY=centerY[i];
+        bases[i].radius=radius[i];
+    }
+    pcController->setBases(bases);
 	pc_epuck->SetControllerType( CONTROLLER_IRI3 );
 	pc_epuck->SetController(pcController);
     m_robotCounter++;
@@ -427,9 +446,9 @@ void CIri3Exp::CreateAndAddEpucks(CSimulator* pc_simulator)
     m_robotCounter=0; //init the robot iterator
     m_robotAmount=m_nRobotsNumber; //save the robot amount
     m_leaderBoard=new int[LIGHT_AMOUNT]; //init the leaderboard
-    m_lightAssignments= new int[m_robotAmount]; //init the assignments array
+    m_baseAssignments= new int[m_robotAmount]; //init the assignments array
     for(int i=0;i<m_robotAmount;i++){ //set the leaderboard to zeros and distribute equally the lights
-        m_lightAssignments[i]=i%LIGHT_AMOUNT;
+        m_baseAssignments[i]=i%LIGHT_AMOUNT;
     }
     for(int i=0;i<LIGHT_AMOUNT;i++)
     {
