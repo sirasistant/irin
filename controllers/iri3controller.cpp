@@ -45,6 +45,7 @@ using namespace std;
 #define BATTERY_THRESHOLD 0.5
 
 #define SPEED 500.0
+#define BASE_AMOUNT 2
 
 CIri3Controller::CIri3Controller (const char* pch_name, CEpuck* pc_epuck, int n_write_to_file) : CController (pch_name, pc_epuck)
 
@@ -409,7 +410,37 @@ void CIri3Controller::HelpPartner ( unsigned int un_priority )
 		fprintf(fileOutput,"%2.4f %2.4f %2.4f %2.4f \n", m_fTime, m_fActivationTable[un_priority][2], m_fActivationTable[un_priority][0], m_fActivationTable[un_priority][1]);
 		fclose(fileOutput);
 		/* END WRITE TO FILES */
-	}
+    }
+}
+
+/*
+ *This method takes an array of size equal to BASE_AMOUNT
+ * and cleans it, sum all the robot contributions to each base
+ * and then return a normalized array with the collected resources
+ * value relative to the base that has collected most resources.
+ * For example, if a base has collected 30 resources and the other 15, the
+ * baseNeeds will be 1 and 0.5 respectively.
+ */
+
+void CIri3Controller::readBaseNeeds (double* baseNeeds) {
+    //Clean array
+    for(int i=0;i<BASE_AMOUNT;i++){
+        baseNeeds[i]=0;
+    }
+    //Sum collection
+    double maxCollection=0;
+    for(int i=0;i<robotAmount;i++){
+        int collection = collectionBoard[i];
+        int base = assignedLights[i];
+        baseNeeds[base]+=collection;
+        if(baseNeeds[base]>maxCollection){
+            maxCollection=baseNeeds[base];
+        }
+    }
+    //normalize array
+    for(int i=0;i<BASE_AMOUNT;i++){
+        baseNeeds[i]/=maxCollection;
+    }
 }
 
 

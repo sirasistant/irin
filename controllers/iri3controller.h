@@ -62,6 +62,7 @@ private:
 	void CollectResources ( unsigned int un_priority );
 	void ReturnToBase ( unsigned int un_priority );
 	void HelpPartner ( unsigned int un_priority );
+	void readBaseNeeds (double* baseNeeds);
 };
 
 #endif
