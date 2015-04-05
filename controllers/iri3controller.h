@@ -51,8 +51,10 @@ private:
 	int 		robotAmount;
 	int*		assignedLights;
 	int* 		collectionBoard;
-
-	int m_nWriteToFile;
+	double		m_lastGround;
+	int 		m_ticksSinceScore;
+	int 		m_nWriteToFile;
+	int 		m_cargoBayLoad;
 
 	void ExecuteBehaviors ( void );
 	void Coordinator ( void );
@@ -63,6 +65,7 @@ private:
 	void ReturnToBase ( unsigned int un_priority );
 	void HelpPartner ( unsigned int un_priority );
 	void readBaseNeeds (double* baseNeeds);
+	double readCargoBaySensor();
 };
 
 #endif

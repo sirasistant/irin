@@ -426,11 +426,14 @@ void CIri3Exp::CreateAndAddEpucks(CSimulator* pc_simulator)
     //Init scenario
     m_robotCounter=0; //init the robot iterator
     m_robotAmount=m_nRobotsNumber; //save the robot amount
-    m_leaderBoard=new int[m_robotAmount]; //init the leaderboard
+    m_leaderBoard=new int[LIGHT_AMOUNT]; //init the leaderboard
     m_lightAssignments= new int[m_robotAmount]; //init the assignments array
     for(int i=0;i<m_robotAmount;i++){ //set the leaderboard to zeros and distribute equally the lights
-        m_leaderBoard[i]=0;
         m_lightAssignments[i]=i%LIGHT_AMOUNT;
+    }
+    for(int i=0;i<LIGHT_AMOUNT;i++)
+    {
+        m_leaderBoard[i]=0;
     }
     //end init scenario
 
