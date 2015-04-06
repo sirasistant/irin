@@ -96,9 +96,8 @@ iri3controller.o: iri3controller.cpp /usr/include/stdc-predef.h \
  /usr/include/c++/4.9/bits/locale_facets.tcc \
  /usr/include/c++/4.9/bits/basic_ios.tcc \
  /usr/include/c++/4.9/bits/ostream.tcc /usr/include/c++/4.9/istream \
- /usr/include/c++/4.9/bits/istream.tcc ../sensors/epuckproximitysensor.h \
- ../sensor.h /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/huge_val.h \
+ /usr/include/c++/4.9/bits/istream.tcc /usr/include/c++/4.9/cmath \
+ /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/huge_val.h \
  /usr/include/x86_64-linux-gnu/bits/huge_valf.h \
  /usr/include/x86_64-linux-gnu/bits/huge_vall.h \
  /usr/include/x86_64-linux-gnu/bits/inf.h \
@@ -106,6 +105,7 @@ iri3controller.o: iri3controller.cpp /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/mathdef.h \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
  /usr/include/x86_64-linux-gnu/bits/mathinline.h \
+ ../sensors/epuckproximitysensor.h ../sensor.h \
  /usr/include/c++/4.9/vector /usr/include/c++/4.9/bits/stl_construct.h \
  /usr/include/c++/4.9/ext/alloc_traits.h \
  /usr/include/c++/4.9/bits/stl_uninitialized.h \
@@ -400,9 +400,7 @@ iri3controller.o: iri3controller.cpp /usr/include/stdc-predef.h \
 
 /usr/include/c++/4.9/bits/istream.tcc:
 
-../sensors/epuckproximitysensor.h:
-
-../sensor.h:
+/usr/include/c++/4.9/cmath:
 
 /usr/include/math.h:
 
@@ -421,6 +419,10 @@ iri3controller.o: iri3controller.cpp /usr/include/stdc-predef.h \
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathinline.h:
+
+../sensors/epuckproximitysensor.h:
+
+../sensor.h:
 
 /usr/include/c++/4.9/vector:
 

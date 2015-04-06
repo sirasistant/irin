@@ -192,6 +192,10 @@ void CIri3Controller::Coordinator ( void )
 {
     int nBehavior;
     double fAngle = 0.0;
+    double behaviorX = 0.0;
+    double behaviorY = 0.0;
+    double currentX = 0.0;
+    double currentY = 0.0;
 
     int nActiveBehaviors = 0;
     /* For every Behavior Activated, sum angles */
@@ -199,12 +203,15 @@ void CIri3Controller::Coordinator ( void )
     {
         if ( m_fActivationTable[nBehavior][2] == 1.0 )
         {
-            fAngle += m_fActivationTable[nBehavior][0];
+        	behaviorX = m_fActivationTable[nBehavior][1]*cos(m_fActivationTable[nBehavior][0]);
+        	behaviorY = m_fActivationTable[nBehavior][1]*sin(m_fActivationTable[nBehavior][0]);
+        	currentX += behaviorX;
+        	currentY += behaviorY;
             nActiveBehaviors++;
         }
     }
 
-    fAngle /= (double) nActiveBehaviors;
+    fAngle = atan2(currentY, currentX);
 
     /* Normalize fAngle */
     while ( fAngle > M_PI ) fAngle -= 2 * M_PI;
