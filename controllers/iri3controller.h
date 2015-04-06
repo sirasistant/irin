@@ -76,6 +76,8 @@ private:
 	void dropPayload();
 	int getBaseUnderRobot();
 	double* readBaseLights(int baseNumber);
+	const double* readBaseDirections(int baseNumber);
+	int readBaseInputNumber(int baseNumber);
 	double Distance(double dX0, double dY0, double dX1, double dY1);
 };
 

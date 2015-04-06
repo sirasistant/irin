@@ -241,7 +241,6 @@ void CIri3Controller::Coordinator ( void )
 
 void CIri3Controller::AvoidObstacles ( unsigned int un_priority )
 {
-
     /* Leer Sensores de Proximidad */
     double* prox = m_seProx->GetSensorReading(m_pcEpuck);
 
@@ -318,7 +317,7 @@ void CIri3Controller::CollectResources ( unsigned int un_priority )
     m_lastGround=ground[0];
     /* Direction Angle 0.0 and always active. We set its vector intensity to 0.5 if used */
     m_fActivationTable[un_priority][0] = 0.0;
-    m_fActivationTable[un_priority][1] = 0.5;
+    m_fActivationTable[un_priority][1] = 0.0;
     m_fActivationTable[un_priority][2] = 1.0;
 
     if (m_nWriteToFile )
@@ -337,19 +336,65 @@ void CIri3Controller::CollectResources ( unsigned int un_priority )
 
 void CIri3Controller::ReturnToBase ( unsigned int un_priority )
 {
-    /* Direction Angle 0.0 and always active. We set its vector intensity to 0.5 if used */
-    m_fActivationTable[un_priority][0] = 0.0;
-    m_fActivationTable[un_priority][1] = 0.5;
-    m_fActivationTable[un_priority][2] = 1.0;
+    int base=assignedBases[m_robotIndex];
+    bool helpingFriend=false;
+    double* baseNeeds=new double[BASE_AMOUNT];
+    readBaseNeeds(baseNeeds);
+    double myBaseRank=baseNeeds[base];
+    for(int i=0;i<BASE_AMOUNT;i++){
+        if(base!=i){
+            if(baseNeeds[i]-myBaseRank<-0.3){
+                base=i;
+                helpingFriend=true;
+                break;
+            }
+        }
+    }
 
+
+    /* Leer Sensores de Luz */
+    double* light = readBaseLights(base);
+
+    double fMaxLight = 0.0;
+    const double* lightDirections = readBaseDirections(base);
+
+    /* We call vRepelent to go similar to Obstacle Avoidance, although it is an aproaching vector */
+    dVector2 vRepelent;
+    vRepelent.x = 0.0;
+    vRepelent.y = 0.0;
+
+    /* Calc vector Sum */
+    for ( int i = 0 ; i < readBaseInputNumber(base) ; i ++ )
+    {
+        vRepelent.x += light[i] * cos ( lightDirections[i] );
+        vRepelent.y += light[i] * sin ( lightDirections[i] );
+
+        if ( light[i] > fMaxLight )
+            fMaxLight = light[i];
+    }
+
+    /* Calc pointing angle */
+    float fRepelent = atan2(vRepelent.y, vRepelent.x);
+
+    /* Normalize angle */
+    while ( fRepelent > M_PI ) fRepelent -= 2 * M_PI;
+    while ( fRepelent < -M_PI ) fRepelent += 2 * M_PI;
+
+
+    m_fActivationTable[un_priority][0] = fRepelent;
+    m_fActivationTable[un_priority][1] = fMaxLight;
+    m_fActivationTable[un_priority][2] = 1.0;
+    if(helpingFriend){
+        m_pcEpuck->SetAllColoredLeds(LED_COLOR_BLUE);
+    }
     if (m_nWriteToFile )
     {
-        /* INIT: WRITE TO FILES */
-        /* Write level of competence ouputs */
-        FILE* fileOutput = fopen("outputFiles/resourcesOutput", "a");
-        fprintf(fileOutput,"%2.4f %2.4f %2.4f %2.4f \n", m_fTime, m_fActivationTable[un_priority][2], m_fActivationTable[un_priority][0], m_fActivationTable[un_priority][1]);
+        /* INIT WRITE TO FILE */
+        FILE* fileOutput = fopen("outputFiles/batteryOutput", "a");
+        fprintf(fileOutput, "%2.4f %2.4f %2.4f %2.4f %2.4f %2.4f %2.4f %2.4f %2.4f %2.4f ", m_fTime, helpingFriend, light[0], light[1], light[2], light[3], light[4], light[5], light[6], light[7]);
+        fprintf(fileOutput, "%2.4f %2.4f %2.4f\n",m_fActivationTable[un_priority][2], m_fActivationTable[un_priority][0], m_fActivationTable[un_priority][1]);
         fclose(fileOutput);
-        /* END WRITE TO FILES */
+        /* END WRITE TO FILE */
     }
 }
 
@@ -373,7 +418,7 @@ void CIri3Controller::ChargeBattery ( unsigned int un_priority )
     vRepelent.y = 0.0;
 
     /* Calc vector Sum */
-    for ( int i = 0 ; i < m_seProx->GetNumberOfInputs() ; i ++ )
+    for ( int i = 0 ; i < m_seLight->GetNumberOfInputs() ; i ++ )
     {
         vRepelent.x += light[i] * cos ( lightDirections[i] );
         vRepelent.y += light[i] * sin ( lightDirections[i] );
@@ -403,7 +448,7 @@ void CIri3Controller::ChargeBattery ( unsigned int un_priority )
         m_fActivationTable[un_priority][2] = 1.0;
     }
 
-    printf("BATTERY: %2f, %2f\n", battery[0]);
+
     if (m_nWriteToFile )
     {
         /* INIT WRITE TO FILE */
@@ -500,7 +545,28 @@ double* CIri3Controller::readBaseLights(int baseNumber){
         return m_seRedLight->GetSensorReading(m_pcEpuck);
     }else{
         return m_seBlueLight->GetSensorReading(m_pcEpuck);
+    }
+}
 
+/*
+ * This method assigns a basenumber to a light direction, if paramfile layout is modified, this method
+ * should be modified accordingly, since basenumbers are an integer that represents
+ * the position of each base in the paramfile
+ *
+*/
+const double* CIri3Controller::readBaseDirections(int baseNumber){
+    if(baseNumber==0){
+        return m_seRedLight->GetSensorDirections();
+    }else{
+        return m_seBlueLight->GetSensorDirections();
+    }
+}
+
+int CIri3Controller::readBaseInputNumber(int baseNumber){
+    if(baseNumber==0){
+        return m_seRedLight->GetNumberOfInputs();
+    }else{
+        return m_seBlueLight->GetNumberOfInputs();
     }
 }
 
