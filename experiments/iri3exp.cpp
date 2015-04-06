@@ -270,6 +270,11 @@ CIri3Exp::~CIri3Exp ( void )
 	delete [] m_fGroundAreaExternalRadius;
 	delete [] m_fGroundAreaInternalRadius;
 	delete [] m_fGroundAreaColor;
+    delete [] m_leaderBoard;
+    delete [] m_baseAssignments;
+    delete [] centerX;
+    delete [] centerY;
+    delete [] radius;
 }
 
 	/******************************************************************************/

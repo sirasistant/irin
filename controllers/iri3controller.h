@@ -62,6 +62,9 @@ private:
 	int 		m_nWriteToFile;
 	int 		m_cargoBayLoad;
 	SimpleBase*	m_bases;
+	int		m_ticksTurning;
+	int 		m_ticksSinceTurn;
+	double 		m_turningAngle;
 
 	void ExecuteBehaviors ( void );
 	void Coordinator ( void );
