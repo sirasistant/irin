@@ -13,32 +13,97 @@
 class CIri2Controller : public CController
 {
 public:
-
+	struct _SimpleBase {
+	    double centerX;
+	    double centerY;
+	    double radius;
+	}; 
+    typedef struct _SimpleBase SimpleBase;
+    void SimulationStep(unsigned n_step_number, double f_time, double f_step_interval);
+    void setRobotIndex(int index);
+    void setRobotAmount(int amount);
+    void setAssignedBases(int* assignedBases);
+    void setCollectionBoard(int* board);
+    void setBases(double* centerX,double* centerY,double* radius);
     CIri2Controller (const char* pch_name, CEpuck* pc_epuck, int n_write_to_file);
     ~CIri2Controller();
-    void SimulationStep(unsigned n_step_number, double f_time, double f_step_interval);
 
 private:
     CEpuck* m_pcEpuck;
-    
-		CWheelsActuator* m_acWheels;
+	CWheelsActuator* m_acWheels;
     CEpuckProximitySensor* m_seProx;
-		CRealLightSensor* m_seLight;
-		CRealBlueLightSensor* m_seBlueLight;
-		CRealRedLightSensor* m_seRedLight;
-		CContactSensor* m_seContact;
-		CGroundSensor* m_seGround;
-		CGroundMemorySensor* m_seGroundMemory;
-		CBatterySensor* m_seBattery;  
-		CBlueBatterySensor* m_seBlueBattery;  
-		CRedBatterySensor* m_seRedBattery;  
-		CEncoderSensor* m_seEncoder;  
-		CCompassSensor* m_seCompass;  
+	CRealLightSensor* m_seLight;
+	CRealBlueLightSensor* m_seBlueLight;
+	CRealRedLightSensor* m_seRedLight;
+	CContactSensor* m_seContact;
+	CGroundSensor* m_seGround;
+	CGroundMemorySensor* m_seGroundMemory;
+	CBatterySensor* m_seBattery;  
+	CBlueBatterySensor* m_seBlueBattery;  
+	CRedBatterySensor* m_seRedBattery;  
+	CEncoderSensor* m_seEncoder;  
+	CCompassSensor* m_seCompass;  
 
+    /* Global Variables */
+	double m_fLeftSpeed;
+	double m_fRightSpeed;
+	double** m_fActivationTable;
+	int m_nWriteToFile;
+	double m_fTime;
+    double fBattToForageInhibitor;
+    double fGoalToForageInhibitor;
+    int m_robotIndex;
+	int robotAmount;
+	int* assignedBases;
+	int* collectionBoard;
+	double m_lastGround;
+	int m_ticksSinceScore;
+	int m_cargoBayLoad;
+	SimpleBase*	m_bases;
+	int	m_ticksTurning;
+	int m_ticksSinceTurn;
+	double m_turningAngle;
+   
+    /* Odometry */
     float m_fOrientation; 
     dVector2 m_vPosition;
+    int m_nState;
+    dVector2 *m_vPositionsPlanning;
+    int m_nPathPlanningStops;
+    int m_nRobotActualGridX;
+    int m_nRobotActualGridY;
+    int m_nForageStatus;
+    int m_nNestFound;
+    int m_nNestGridX;
+    int m_nNestGridY;
+    int m_nPreyFound;
+    int m_nPreyGridX;
+    int m_nPreyGridY;
+    int m_nPathPlanningDone;
 
-		int m_nWriteToFile;
+	/* Functions */
+	void ExecuteBehaviors   ( void );
+	void Coordinator        ( void );
+    void CalcPositionAndOrientation ( double *f_encoder );
+    string  pathFind ( const int &xStart, const int &yStart, const int &xFinish, const int &yFinish );
+    void PrintMap ( int *print_map  );
+    /* Behaviors */
+	void AvoidObstacles ( unsigned int un_priority );
+	void ChargeBattery ( unsigned int un_priority );
+	void CollectResources ( unsigned int un_priority );
+	void ReturnToBase ( unsigned int un_priority );
+	void ComputeActualCell  ( unsigned int un_priority );
+    void PathPlanning ( unsigned int un_priority );
+	void GoGoal ( unsigned int un_priority );
+	/*Helpers*/
+	void readBaseNeeds (double* baseNeeds);
+	double readCargoBaySensor();
+	void dropPayload();
+	int getBaseUnderRobot();
+	double* readBaseLights(int baseNumber);
+	const double* readBaseDirections(int baseNumber);
+	int readBaseInputNumber(int baseNumber);
+	double Distance(double dX0, double dY0, double dX1, double dY1);
 };
 
 #endif
