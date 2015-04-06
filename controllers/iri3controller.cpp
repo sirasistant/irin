@@ -49,7 +49,7 @@ using namespace std;
 #define SPEED 500.0
 #define BASE_AMOUNT 2
 #define SCORE_SPACING 40
-#define MAX_CARGO_LOAD 3
+#define MAX_CARGO_LOAD 3.0
 #define MAX_TURN_SPACING 50
 #define MAX_TURN_DURATION 10
 
@@ -150,7 +150,6 @@ void CIri3Controller::setCollectionBoard(int* board){
 
 void CIri3Controller::SimulationStep(unsigned n_step_number, double f_time, double f_step_interval)
 {
-
     m_fTime = f_time;
 
     /* Execute the levels of competence */
@@ -330,7 +329,7 @@ void CIri3Controller::CollectResources ( unsigned int un_priority )
         }
     }
 
-    if(m_lastGround==1.0&&ground[0]==0.5){
+    if(ground[0]==0.5){
         //detected base area entering
         dropPayload();
     }
@@ -349,7 +348,7 @@ void CIri3Controller::CollectResources ( unsigned int un_priority )
 
         m_ticksSinceTurn++;
         if(m_ticksSinceTurn>=MAX_TURN_SPACING){
-            m_turningAngle=(M_PI/2.0)*((rand() % 100)/99.0);
+            m_turningAngle=(M_PI/2.0)*((rand() % 100)/99.0-0.5);
             m_ticksTurning=1;
             m_ticksSinceTurn=0;
         }
@@ -382,6 +381,7 @@ void CIri3Controller::ReturnToBase ( unsigned int un_priority )
     for(int i=0;i<BASE_AMOUNT;i++){
         if(base!=i){
             if(baseNeeds[i]-myBaseRank<-0.3){
+
                 base=i;
                 helpingFriend=true;
                 break;
@@ -420,7 +420,7 @@ void CIri3Controller::ReturnToBase ( unsigned int un_priority )
 
 
     m_fActivationTable[un_priority][0] = fRepelent;
-    m_fActivationTable[un_priority][1] = fMaxLight/4;
+    m_fActivationTable[un_priority][1] = fMaxLight;
     if(readCargoBaySensor()>0.0){
         m_fActivationTable[un_priority][2] = 1.0;
     }else{
@@ -535,14 +535,24 @@ double CIri3Controller::readCargoBaySensor(){
 void CIri3Controller::dropPayload(){
     //find out in which base is standing (non robot work, scenario related)
     int base=getBaseUnderRobot();
-
-    //drop the load
-    collectionBoard[base]+= m_cargoBayLoad;
-    m_cargoBayLoad =0 ;
+    if(base!=-1){
+        //drop the load
+        if(m_cargoBayLoad>0){
+            printf("Robot number %i dropping load to base %i . Dropped %i loads \n",m_robotIndex,base,m_cargoBayLoad);
+            collectionBoard[base]+= m_cargoBayLoad;
+            m_cargoBayLoad =0 ;
+        }
+    }
 }
 
-void CIri3Controller::setBases(SimpleBase* bases){
-    m_bases=bases;
+void CIri3Controller::setBases(double* centerX,double* centerY,double* radius){
+    m_bases=new SimpleBase[BASE_AMOUNT];
+    for(int i=0;i<BASE_AMOUNT;i++){
+        m_bases[i].centerX=centerX[i];
+        m_bases[i].centerY=centerY[i];
+        m_bases[i].radius=radius[i];
+        printf(", simpleBase is:x: %2.2f, y: %2.2f, rad: %2.2f \n",m_bases[i].centerX,m_bases[i].centerY,m_bases[i].radius);
+    }
 }
 
 int CIri3Controller::getBaseUnderRobot(){
@@ -550,7 +560,6 @@ int CIri3Controller::getBaseUnderRobot(){
         double distance=Distance(m_bases[i].centerX,m_bases[i].centerY,m_pcEpuck->GetPosition().x,m_pcEpuck->GetPosition().y);
         double radius=m_bases[i].radius;
         if(abs(distance)<abs(radius)){
-            printf("Robot is under base %i \n",i);
             return i;
         }
     }
@@ -565,9 +574,9 @@ int CIri3Controller::getBaseUnderRobot(){
 */
 double* CIri3Controller::readBaseLights(int baseNumber){
     if(baseNumber==0){
-        return m_seRedLight->GetSensorReading(m_pcEpuck);
-    }else{
         return m_seBlueLight->GetSensorReading(m_pcEpuck);
+    }else{
+        return m_seRedLight->GetSensorReading(m_pcEpuck);
     }
 }
 
@@ -579,17 +588,17 @@ double* CIri3Controller::readBaseLights(int baseNumber){
 */
 const double* CIri3Controller::readBaseDirections(int baseNumber){
     if(baseNumber==0){
-        return m_seRedLight->GetSensorDirections();
-    }else{
         return m_seBlueLight->GetSensorDirections();
+    }else{
+        return m_seRedLight->GetSensorDirections();
     }
 }
 
 int CIri3Controller::readBaseInputNumber(int baseNumber){
     if(baseNumber==0){
-        return m_seRedLight->GetNumberOfInputs();
-    }else{
         return m_seBlueLight->GetNumberOfInputs();
+    }else{
+        return m_seRedLight->GetNumberOfInputs();
     }
 }
 

@@ -27,7 +27,7 @@ public:
     void setRobotAmount(int amount);
     void setAssignedBases(int* assignedBases);
     void setCollectionBoard(int* board);
-    void setBases(SimpleBase* bases);
+    void setBases(double* centerX,double* centerY,double* radius);
 private:
     CEpuck* m_pcEpuck;
     

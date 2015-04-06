@@ -270,11 +270,6 @@ CIri3Exp::~CIri3Exp ( void )
 	delete [] m_fGroundAreaExternalRadius;
 	delete [] m_fGroundAreaInternalRadius;
 	delete [] m_fGroundAreaColor;
-    delete [] m_leaderBoard;
-    delete [] m_baseAssignments;
-    delete [] centerX;
-    delete [] centerY;
-    delete [] radius;
 }
 
 	/******************************************************************************/
@@ -430,13 +425,7 @@ void CIri3Exp::SetController(CEpuck* pc_epuck)
     pcController->setRobotIndex( m_robotCounter);
     pcController->setAssignedBases(m_baseAssignments);
     pcController->setCollectionBoard(m_leaderBoard);
-    CIri3Controller::SimpleBase bases[LIGHT_AMOUNT];
-    for(int i=0;i<LIGHT_AMOUNT;i++){
-        bases[i].centerX=centerX[i];
-        bases[i].centerY=centerY[i];
-        bases[i].radius=radius[i];
-    }
-    pcController->setBases(bases);
+    pcController->setBases(centerX,centerY,radius);
 	pc_epuck->SetControllerType( CONTROLLER_IRI3 );
 	pc_epuck->SetController(pcController);
     m_robotCounter++;
