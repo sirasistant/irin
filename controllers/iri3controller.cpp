@@ -35,13 +35,12 @@ extern long int rngSeed;
 
 using namespace std;
 
-#define BEHAVIORS 5
+#define BEHAVIORS 4
 
 #define AVOID_PRIORITY 0
 #define CHARGE_PRIORITY 1
 #define RETURN_PRIORITY 2
 #define COLLECT_PRIORITY 3
-#define HELP_PRIORITY 4
 
 #define PROXIMITY_THRESHOLD 0.3
 #define BATTERY_THRESHOLD 0.5
@@ -100,6 +99,16 @@ CIri3Controller::CIri3Controller (const char* pch_name, CEpuck* pc_epuck, int n_
     {
         m_fActivationTable[i] = new double[3];
     }
+
+    for(int i = 0; i < BEHAVIORS; i++)
+    {
+    	for(int j = 0; j < 3; j++)
+    	{
+    		m_fActivationTable[i][j] = 0.0;
+    	}
+    }
+
+
 
 }
 
@@ -182,7 +191,6 @@ void CIri3Controller::ExecuteBehaviors ( void )
     ChargeBattery ( CHARGE_PRIORITY );
     ReturnToBase ( RETURN_PRIORITY );
     CollectResources ( COLLECT_PRIORITY );
-    HelpPartner ( HELP_PRIORITY );
 }
 
 /******************************************************************************/
@@ -467,26 +475,6 @@ void CIri3Controller::ChargeBattery ( unsigned int un_priority )
     }
 }
 
-/******************************************************************************/
-/******************************************************************************/
-
-void CIri3Controller::HelpPartner ( unsigned int un_priority )
-{
-    /* Direction Angle 0.0 and always active. We set its vector intensity to 0.5 if used */
-    m_fActivationTable[un_priority][0] = 0.0;
-    m_fActivationTable[un_priority][1] = 0.5;
-    m_fActivationTable[un_priority][2] = 1.0;
-
-    if (m_nWriteToFile )
-    {
-        /* INIT: WRITE TO FILES */
-        /* Write level of competence ouputs */
-        FILE* fileOutput = fopen("outputFiles/helpOutput", "a");
-        fprintf(fileOutput,"%2.4f %2.4f %2.4f %2.4f \n", m_fTime, m_fActivationTable[un_priority][2], m_fActivationTable[un_priority][0], m_fActivationTable[un_priority][1]);
-        fclose(fileOutput);
-        /* END WRITE TO FILES */
-    }
-}
 
 /*
  *This method takes an array of size equal to BASE_AMOUNT
