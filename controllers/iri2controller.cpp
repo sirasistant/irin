@@ -53,7 +53,7 @@ const   int dir=8; // number of possible directions to go at any position
 static int dx[dir]={1, 1, 0, -1, -1, -1, 0, 1};
 static int dy[dir]={0, 1, 1, 1, 0, -1, -1, -1};
 
-#define ERROR_DIRECTION 0.05 
+#define ERROR_DIRECTION 0.05
 #define ERROR_POSITION  0.02
 #define PI 3.1415926535
 
@@ -72,7 +72,7 @@ using namespace std;
 #define PROXIMITY_THRESHOLD 0.3
 #define BATTERY_THRESHOLD 0.5
 
-#define SPEED 500.0
+#define SPEED 400.0
 #define BASE_AMOUNT 2
 #define SCORE_SPACING 40
 #define MAX_CARGO_LOAD 3.0
@@ -348,7 +348,7 @@ void CIri2Controller::ExecuteBehaviors ( void )
 
     AvoidObstacles ( AVOID_PRIORITY );
     ChargeBattery ( CHARGE_PRIORITY );
-     CollectResources ( COLLECT_PRIORITY );
+    CollectResources ( COLLECT_PRIORITY );
     ComputeActualCell ( GOAL_PRIORITY );
     PathPlanning ( GOAL_PRIORITY );
     GoGoal ( GOAL_PRIORITY );
@@ -488,7 +488,7 @@ void CIri2Controller::CollectResources ( unsigned int un_priority )
         }
     }
 
-    if(ground[0]==0.0){
+    if(ground[0]==0&&m_lastGround!=0){
         //detected base area entering
         dropPayload();
     }
@@ -565,7 +565,7 @@ void CIri2Controller::ReturnToBase ( unsigned int un_priority )
 
 
     m_fActivationTable[un_priority][0] = fRepelent;
-    m_fActivationTable[un_priority][1] = fMaxLight/8;
+    m_fActivationTable[un_priority][1] = fMaxLight/4;
     if(readCargoBaySensor()>0.0){
         m_fActivationTable[un_priority][2] = 1.0;//TODO OJOCUIDAO OOJOJOJOJOJOJOJOJO
     }else{
@@ -683,13 +683,30 @@ double CIri2Controller::readCargoBaySensor(){
 
 void CIri2Controller::dropPayload(){
     //find out in which base is standing (non robot work, scenario related)
-    int base=getBaseUnderRobot();
+    int nearestBase=-1;
+    double nearestBaseLightAmount=-1;
+    for(int i=0;i<BASE_AMOUNT;i++){
+        double baseLightAmount=0;
+        double* lectures=readBaseLights(i);
+        for(int j=0;j<readBaseInputNumber(i);j++){
+            baseLightAmount+=lectures[j];
+        }
+        if(baseLightAmount>nearestBaseLightAmount){
+            nearestBase=i;
+            nearestBaseLightAmount=baseLightAmount;
+        }
+    }
+    int base=nearestBase;
     if(base!=-1){
+
         //drop the load
-        if(m_cargoBayLoad>0){
+        if(m_cargoBayLoad>0&&base==getObjectiveBase()){
             printf("Robot number %i dropping load to base %i . Dropped %i loads \n",m_robotIndex,base,m_cargoBayLoad);
             collectionBoard[base]+= m_cargoBayLoad;
             m_cargoBayLoad =0 ;
+        }else{
+            if(m_cargoBayLoad>0)
+                printf("Nope");
         }
     }
 }
@@ -804,13 +821,13 @@ void CIri2Controller::ComputeActualCell ( unsigned int un_priority )
     }
     if ( ground[0]==0.5&&m_lastGround!=0.5)
     {
-
-         //update forage status
+        printf("i'm in prey, should store");
+        //update forage status
         // m_nForageStatus = 1;
-         // Asumme Path Planning is done
-         m_nPathPlanningDone = 0;
-         // Restart PathPlanning state
-         m_nState = 0;
+        // Asumme Path Planning is done
+        m_nPathPlanningDone = 0;
+        // Restart PathPlanning state
+        m_nState = 0;
         /* Mark prey on map */
         onlineMap[m_nRobotActualGridX][m_nRobotActualGridY] = PREY;
         /* Flag that nest was found */
@@ -822,6 +839,7 @@ void CIri2Controller::ComputeActualCell ( unsigned int un_priority )
         PrintMap(onlineMap);
         /* DEBUG */
     }
+
 }
 
 /******************************************************************************/
@@ -836,11 +854,12 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
     for ( int y = 0 ; y < m ; y++ )
         for ( int x = 0 ; x < n ; x++ )
             map[x][y]= NO_OBSTACLE;
-  //  printf("Trying to pathfind %i %i %i", m_nNestFound , m_nPreyFound , m_nPathPlanningDone );
-    if ( m_nNestFound == 1 && m_nPreyFound == 1 && m_nPathPlanningDone == 0 && getObjectiveBase()>-1)
+    //printf("Trying to pathfind %i %i %i", m_nNestFound , m_nPreyFound , m_nPathPlanningDone );
+    if ( m_nNestFound == 1 && m_nPreyFound == 1 && m_nPathPlanningDone == 0 && getObjectiveBase()>-1 )
     {
 
-           printf("Gonna pathfind \n");
+
+
         m_nPathPlanningStops=0;
         m_fActivationTable[un_priority][2] = 1;
         printf("base %i ",getObjectiveBase());
@@ -849,6 +868,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         int xA, yA, xB, yB;
         if ( m_nForageStatus == 1)
         {
+            printf("Gonna pathfind to base\n");
             xA=m_nRobotActualGridX;
             yA=m_nRobotActualGridY;
             xB=getObjectiveNestX();
@@ -856,6 +876,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         }
         else
         {
+            printf("Gonna pathfind to prey\n");
             xA=m_nRobotActualGridX;
             yA=m_nRobotActualGridY;
             xB=m_nPreyGridX;
@@ -1031,22 +1052,22 @@ void CIri2Controller::GoGoal ( unsigned int un_priority )
 
     if ( ((m_nNestFound * fBattToForageInhibitor) == 1 ) && ( (m_nPreyFound *  fBattToForageInhibitor )== 1 ) )
     {
-     //   printf("Going goal \n");
+        //   printf("Going goal \n");
         /* Enable Inhibitor to Forage */
         fGoalToForageInhibitor = 0.0;
 
         /* If something not found at the end of planning, reset plans */
         if (m_nState >= m_nPathPlanningStops )
         {
-          //  m_nNestFound  = 0;
-          //  m_nNestFound  = 0;
+            //  m_nNestFound  = 0;
+            //  m_nNestFound  = 0;
             m_nState      = 0;
             return;
         }
 
         /* DEBUG */
-       // printf("PlanningX: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].x, m_vPosition.x );
-      //  printf("PlanningY: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].y, m_vPosition.y );
+     //   printf("PlanningX: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].x, m_vPosition.x );
+     //   printf("PlanningY: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].y, m_vPosition.y );
         /* DEBUG */
 
         double fX = (m_vPositionsPlanning[m_nState].x - m_vPosition.x);
@@ -1123,12 +1144,12 @@ void CIri2Controller::CalcPositionAndOrientation (double *f_encoder)
 string CIri2Controller::pathFind( int xStart, int yStart,
                                   int xFinish, int yFinish )
 {
-     priority_queue<node> pq[2]; // list of open (not-yet-tried) nodes
-     int pqi; // pq index
-     node* n0;
-     node* m0;
-     int i, j, x, y, xdx, ydy;
-     char c;
+    priority_queue<node> pq[2]; // list of open (not-yet-tried) nodes
+    int pqi; // pq index
+    node* n0;
+    node* m0;
+    int i, j, x, y, xdx, ydy;
+    char c;
     pqi=0;
 
     // reset the node maps
@@ -1145,7 +1166,7 @@ string CIri2Controller::pathFind( int xStart, int yStart,
     n0=new node(xStart, yStart, 0, 0);
     n0->updatePriority(xFinish, yFinish);
     pq[pqi].push(*n0);
-   // open_nodes_map[x][y]=n0->getPriority(); // mark it on the open nodes map
+    // open_nodes_map[x][y]=n0->getPriority(); // mark it on the open nodes map
 
     // A* search
     while(!pq[pqi].empty())
@@ -1251,10 +1272,10 @@ void CIri2Controller::PrintMap ( int** print_map )
 {
 
     /* DEBUG */
-       for ( int y = 0 ; y < m ; y++ )
+    for ( int y = 0 ; y < m ; y++ )
 
     {
-         for ( int x = 0 ; x < n ; x++ )
+        for ( int x = 0 ; x < n ; x++ )
         {
             if ( print_map[x][y] == 0 )
                 cout<<".";
@@ -1284,20 +1305,20 @@ int CIri2Controller::getObjectiveNestX(){
 
 }
 int CIri2Controller::getObjectiveNestY(){
-        printf("third call");
+    printf("third call");
     int base=getObjectiveBase();
     printf("objective nest y");
     printf("is %i \n",m_basesToCoordinates[base][1]);
     return m_basesToCoordinates[base][1];
 }
 void CIri2Controller::identifyAndStoreNest(int x, int y){
-   // Asumme Path Planning is done
-   m_nPathPlanningDone = 0;
-   // Restart PathPlanning state
-   m_nState = 0;
-   /* Mark nest on map */
-   onlineMap[x][y] = NEST;
-   /* DEBUG */
+    // Asumme Path Planning is done
+    m_nPathPlanningDone = 0;
+    // Restart PathPlanning state
+    m_nState = 0;
+    /* Mark nest on map */
+    onlineMap[x][y] = NEST;
+    /* DEBUG */
     PrintMap(onlineMap);
     int nearestBase=-1;
     double nearestBaseLightAmount=-1;
