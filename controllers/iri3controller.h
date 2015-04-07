@@ -73,7 +73,7 @@ private:
 	void ChargeBattery ( unsigned int un_priority );
 	void CollectResources ( unsigned int un_priority );
 	void ReturnToBase ( unsigned int un_priority );
-	/*Helpers*/
+	void HelpPartner ( unsigned int un_priority );
 	void readBaseNeeds (double* baseNeeds);
 	double readCargoBaySensor();
 	void dropPayload();

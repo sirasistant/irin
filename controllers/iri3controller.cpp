@@ -195,6 +195,7 @@ void CIri3Controller::ExecuteBehaviors ( void )
     ChargeBattery ( CHARGE_PRIORITY );
     ReturnToBase ( RETURN_PRIORITY );
     CollectResources ( COLLECT_PRIORITY );
+
 }
 
 /******************************************************************************/

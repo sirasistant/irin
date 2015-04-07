@@ -37,6 +37,8 @@
 /******************** Controllers **************/
 #include "iri2controller.h"
 
+#define LIGHT_AMOUNT 2
+
 using namespace std;
 
 /*Create Arena */
@@ -199,6 +201,12 @@ CIri2Exp::CIri2Exp(const char* pch_name, const char* paramsFile) :
 		m_fGroundAreaInternalRadius = new double[m_nNumberOfGroundArea];
 		m_fGroundAreaColor = new double[m_nNumberOfGroundArea];
 
+
+        centerX=new double[ m_nNumberOfGroundArea ];
+        centerY=new double[ m_nNumberOfGroundArea ];
+        radius=new double[ m_nNumberOfGroundArea ];
+        int j=0;
+
 		for ( int i = 0 ; i < m_nNumberOfGroundArea ; i++)
 		{
 			m_vGroundAreaCenter[i].x = getDouble('=',pfile);
@@ -206,7 +214,12 @@ CIri2Exp::CIri2Exp(const char* pch_name, const char* paramsFile) :
 			m_fGroundAreaInternalRadius[i] = 0.0;
 			m_fGroundAreaExternalRadius[i] = getDouble('=',pfile);
 			m_fGroundAreaColor[i] = getDouble('=',pfile);
-
+            if(m_fGroundAreaColor[i]==0.0){
+                centerX[j]=m_vGroundAreaCenter[i].x;
+                centerY[j]=m_vGroundAreaCenter[i].y;
+                radius[j]=m_fGroundAreaExternalRadius[i];
+                j++;
+            }
 		}
 		
 		/* SENSORS */
@@ -405,9 +418,16 @@ void CIri2Exp::SetController(CEpuck* pc_epuck)
 {
 	char pchTemp[128];
 	sprintf(pchTemp, "Iri1");
-	CController* pcController = new CIri2Controller(pchTemp, pc_epuck, m_nWriteToFile);
+    CIri2Controller* pcController = new CIri2Controller(pchTemp, pc_epuck, m_nWriteToFile);
+    pcController->setRobotAmount(m_robotAmount);
+    pcController->setRobotIndex( m_robotCounter);
+    pcController->setAssignedBases(m_baseAssignments);
+
+    pcController->setCollectionBoard(m_leaderBoard);
+    pcController->setBases(centerX,centerY,radius);
 	pc_epuck->SetControllerType( CONTROLLER_IRI2 );
 	pc_epuck->SetController(pcController);
+    m_robotCounter++;
 
 }
 
@@ -416,6 +436,22 @@ void CIri2Exp::SetController(CEpuck* pc_epuck)
 
 void CIri2Exp::CreateAndAddEpucks(CSimulator* pc_simulator)
 {
+    //Init scenario
+    m_robotCounter=0; //init the robot iterator
+    m_robotAmount=m_nRobotsNumber; //save the robot amount
+    m_leaderBoard=new int[LIGHT_AMOUNT]; //init the leaderboard
+    m_baseAssignments= new int[m_robotAmount]; //init the assignments array
+    for(int i=0;i<m_robotAmount;i++){ //set the leaderboard to zeros and distribute equally the lights
+
+        m_baseAssignments[i]=i%LIGHT_AMOUNT;
+
+    }
+    for(int i=0;i<LIGHT_AMOUNT;i++)
+    {
+        m_leaderBoard[i]=0;
+    }
+    //end init scenario
+
 	/* Create and add epucks */
 	char label[100] = "epuck";    
 	for (int i = 0; i < m_nRobotsNumber; i++)
