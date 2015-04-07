@@ -237,8 +237,8 @@ CIri2Controller::CIri2Controller (const char* pch_name, CEpuck* pc_epuck, int n_
     m_nState              = 0;
     m_nPathPlanningStops  = 0;
     m_fOrientation        = 0.0;
-    m_vPosition.x         = 0.0;
-    m_vPosition.y         = 0.0;
+    m_vPosition.x         = m_pcEpuck->GetPosition().x;
+    m_vPosition.y         = m_pcEpuck->GetPosition().y;
 
     /* Set Actual Position to robot Start Grid */
     m_nRobotActualGridX = robotStartGridX;
@@ -1134,6 +1134,9 @@ void CIri2Controller::CalcPositionAndOrientation (double *f_encoder)
     }
     while(m_fOrientation < 0) m_fOrientation += 2*M_PI;
     while(m_fOrientation > 2*M_PI) m_fOrientation -= 2*M_PI;
+    double deltaX=m_vPosition.x -m_pcEpuck->GetPosition().x;
+    double deltaY=m_vPosition.y -m_pcEpuck->GetPosition().y;
+    printf("Positioning error: %2.3f \n",sqrt(deltaX*deltaX+deltaY*deltaY));
 }
 
 /******************************************************************************/
