@@ -152,11 +152,13 @@ bool operator < ( const node & a, const node & b )
 CIri2Controller::CIri2Controller (const char* pch_name, CEpuck* pc_epuck, int n_write_to_file) : CController (pch_name, pc_epuck)
 
 {
+    //This bidimensional array stores the base x, base y, and if the base has been discovered for each base
     m_basesToCoordinates=new int*[BASE_AMOUNT];
     for(int i=0;i<BASE_AMOUNT;i++){
         m_basesToCoordinates[i]=new int[3];
         m_basesToCoordinates[i][2]=0; //Set all base discovery indicator to 0
     }
+    //INIT ALL ARRAYS
     map=new int*[n];
     for(int i=0;i<n;i++){
         map[i]=new int[m];
@@ -177,7 +179,9 @@ CIri2Controller::CIri2Controller (const char* pch_name, CEpuck* pc_epuck, int n_
     for(int i=0;i<n;i++){
         dir_map[i]=new int[m];
     }
+    //END INIT ALL ARRAYS
 
+    //Tick counters for turning
     m_ticksSinceTurn=0;
     m_ticksTurning=0;
     /* Set Write to File */
@@ -236,7 +240,7 @@ CIri2Controller::CIri2Controller (const char* pch_name, CEpuck* pc_epuck, int n_
     /* Odometry */
     m_nState              = 0;
     m_nPathPlanningStops  = 0;
-    m_fOrientation        = 0.0;
+    m_fOrientation        = 0.0; //Initial position is set from simulator. From now on, only odometry is used
     m_vPosition.x         = m_pcEpuck->GetPosition().x;
     m_vPosition.y         = m_pcEpuck->GetPosition().y;
 
@@ -513,7 +517,7 @@ void CIri2Controller::CollectResources ( unsigned int un_priority )
         }
     }
     m_fActivationTable[un_priority][0] = m_turningAngle;
-    m_fActivationTable[un_priority][1] = 0.15;
+    m_fActivationTable[un_priority][1] = 0.25;
     m_fActivationTable[un_priority][2] = 1.0;
 
     if (m_nWriteToFile )
@@ -567,7 +571,7 @@ void CIri2Controller::ReturnToBase ( unsigned int un_priority )
     m_fActivationTable[un_priority][0] = fRepelent;
     m_fActivationTable[un_priority][1] = fMaxLight/4;
     if(readCargoBaySensor()>0.0){
-        m_fActivationTable[un_priority][2] = 1.0;//TODO OJOCUIDAO OOJOJOJOJOJOJOJOJO
+        m_fActivationTable[un_priority][2] = 1.0;
     }else{
         m_fActivationTable[un_priority][2] = 0.0;
     }
@@ -680,7 +684,10 @@ void CIri2Controller::readBaseNeeds (double* baseNeeds) {
 double CIri2Controller::readCargoBaySensor(){
     return m_cargoBayLoad/MAX_CARGO_LOAD;
 }
-
+/*
+ * In this controller, the dropPayload method only allows the robot to drop the payload in the objective base.
+ *
+ * */
 void CIri2Controller::dropPayload(){
     //find out in which base is standing (non robot work, scenario related)
     int nearestBase=-1;
@@ -717,7 +724,7 @@ void CIri2Controller::setBases(double* centerX,double* centerY,double* radius){
         m_bases[i].centerX=centerX[i];
         m_bases[i].centerY=centerY[i];
         m_bases[i].radius=radius[i];
-        printf(", simpleBase is:x: %2.2f, y: %2.2f, rad: %2.2f \n",m_bases[i].centerX,m_bases[i].centerY,m_bases[i].radius);
+      //  printf(", simpleBase is:x: %2.2f, y: %2.2f, rad: %2.2f \n",m_bases[i].centerX,m_bases[i].centerY,m_bases[i].radius);
     }
 }
 
@@ -816,14 +823,12 @@ void CIri2Controller::ComputeActualCell ( unsigned int un_priority )
         onlineMap[m_nRobotActualGridX][m_nRobotActualGridY] = NO_OBSTACLE;
     m_nForageStatus=readCargoBaySensor()>0?1:0;
     if(ground[0]==0&&m_lastGround!=0){
-        printf("i'm in nest, should drop");
+        printf("i'm in nest\n");
         identifyAndStoreNest(m_nRobotActualGridX,m_nRobotActualGridY);
     }
     if ( ground[0]==0.5&&m_lastGround!=0.5)
     {
-        printf("i'm in prey, should store");
-        //update forage status
-        // m_nForageStatus = 1;
+        printf("i'm in prey\n");
         // Asumme Path Planning is done
         m_nPathPlanningDone = 0;
         // Restart PathPlanning state
@@ -862,21 +867,21 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         finishedPath=false;
         m_nPathPlanningStops=0;
         m_fActivationTable[un_priority][2] = 1;
-        printf("base %i ",getObjectiveBase());
+     //   printf("base %i ",getObjectiveBase());
 
         /* Obtain start and end desired position */
         int xA, yA, xB, yB;
         if ( m_nForageStatus == 1)
         {
-            printf("Gonna pathfind to base\n");
+            printf("Going to pathfind to base %i \n",getObjectiveBase());
             xA=m_nRobotActualGridX;
             yA=m_nRobotActualGridY;
-            xB=getObjectiveNestX();
+            xB=getObjectiveNestX(); // we use the nest that needs help
             yB=getObjectiveNestY();
         }
         else
         {
-            printf("Gonna pathfind to prey\n");
+            printf("Going to pathfind to prey\n");
             xA=m_nRobotActualGridX;
             yA=m_nRobotActualGridY;
             xB=m_nPreyGridX;
@@ -886,14 +891,14 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* DEBUG */
         printf("START: %d, %d - END: %d, %d\n", xA, yA, xB, yB);
         /* DEBUG */
-        printf("hola1");
+ //       printf("hola1");
         /* Obtain Map */
         for ( int y = 0 ; y < m ; y++ )
             for ( int x = 0 ; x < n ; x++ )
                 if (onlineMap[x][y] != NO_OBSTACLE && onlineMap[x][y] != NEST && onlineMap[x][y] != PREY)
                     map[x][y] = OBSTACLE;
 
-        printf("hola2");
+   //     printf("hola2");
         /* Obtain optimal path */
         string route=pathFind(xA, yA, xB, yB);
         /* DEBUG */
@@ -905,13 +910,13 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         for (int i = 1 ; i < route.length() ; i++)
             if (route[i-1] != route[i])
                 m_nPathPlanningStops++;
-        printf("hola3");
+  //      printf("hola3");
         /* Add last movement */
         m_nPathPlanningStops++;
         /* DEBUG */
         printf("STOPS: %d\n", m_nPathPlanningStops);
         /* DEBUG */
-        printf("hola4");
+  //      printf("hola4");
         fflush(stdout);
         /* Define vector of desired positions. One for each changing direction */
         m_vPositionsPlanning = new dVector2[m_nPathPlanningStops];
@@ -919,7 +924,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* Calc increment of position, correlating grid and metrics */
         double fXmov = mapLengthX/mapGridX;
         double fYmov = mapLengthY/mapGridY;
-        printf("hola5");
+     //   printf("hola5");
         fflush(stdout);
         /* Get actual position */
         dVector2 actualPos;
@@ -930,7 +935,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* Fill vector of desired positions */
         int stop = 0;
         int counter = 0;
-        printf("hola5");
+    //    printf("hola5");
         fflush(stdout);
         /* Check the route and obtain the positions*/
         for (int i = 1 ; i < route.length() ; i++)
@@ -951,7 +956,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
                 /* Update position for next stop */
                 actualPos.x = m_vPositionsPlanning[stop].x;
                 actualPos.y = m_vPositionsPlanning[stop].y;
-                printf("hola6");
+        //        printf("hola6");
                 fflush(stdout);
                 /* Increment stop */
                 stop++;
@@ -961,7 +966,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
             /* If we are in the last update, calc last movement */
             if (i==(route.length()-1))
             {
-                printf("hola7");
+        //        printf("hola7");
                 fflush(stdout);
                 /* Increment counter */
                 counter++;
@@ -991,7 +996,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* DEBUG */
         if(route.length()>0)
         {
-            printf("hola8");
+  //          printf("hola8");
             fflush(stdout);
             int j; char c;
             int x=xA;
@@ -1006,7 +1011,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
                 map[x][y] = PATH;
             }
             map[x][y]=END;
-            printf("I'm from base %i",assignedBases[m_robotIndex]);
+     //       printf("I'm from base %i",assignedBases[m_robotIndex]);
             PrintMap(onlineMap);
             printf("\n\n");
             PrintMap(map);
@@ -1050,7 +1055,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* END DEBUG */
 
         m_nPathPlanningDone = 1;
-        printf("hola9");
+    //    printf("hola9");
         fflush(stdout);
     }
 }
@@ -1068,21 +1073,17 @@ void CIri2Controller::GoGoal ( unsigned int un_priority )
         /* Enable Inhibitor to Forage */
         fGoalToForageInhibitor = 0.0;
 
-        /* If something not found at the end of planning, reset plans */
+        /* If something not found at the end of planning, reset plans until next event*/
         if (m_nState >= m_nPathPlanningStops )
         {
-            finishedPath=true;
-            printf("shit nigga, reset \n");
-            //  m_nNestFound  = 0;
-            //  m_nNestFound  = 0;
-
+            finishedPath=true; //i have finished the path, so i should just move around
             m_nState      = 0;
             return;
         }
 
         /* DEBUG */
-     //   printf("PlanningX: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].x, m_vPosition.x );
-     //   printf("PlanningY: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].y, m_vPosition.y );
+        //   printf("PlanningX: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].x, m_vPosition.x );
+        //   printf("PlanningY: %2f, Actual: %2f\n", m_vPositionsPlanning[m_nState].y, m_vPosition.y );
         /* DEBUG */
 
         double fX = (m_vPositionsPlanning[m_nState].x - m_vPosition.x);
@@ -1102,12 +1103,14 @@ void CIri2Controller::GoGoal ( unsigned int un_priority )
         while ( fGoalDirection < -M_PI) fGoalDirection+=2*M_PI;
 
         m_fActivationTable[un_priority][0] = fGoalDirection;
-        m_fActivationTable[un_priority][1] = 1;
+        m_fActivationTable[un_priority][1] = 0.5;
         m_fActivationTable[un_priority][2] = 1;
+    }else{
+        m_fActivationTable[un_priority][2] = 0; // disable it
     }
 }
 
-/******************************************************************************/
+/*our odometry algorythm*/
 /******************************************************************************/
 
 void CIri2Controller::CalcPositionAndOrientation (double *f_encoder)
@@ -1151,7 +1154,7 @@ void CIri2Controller::CalcPositionAndOrientation (double *f_encoder)
     while(m_fOrientation > 2*M_PI) m_fOrientation -= 2*M_PI;
     double deltaX=m_vPosition.x -m_pcEpuck->GetPosition().x;
     double deltaY=m_vPosition.y -m_pcEpuck->GetPosition().y;
- //   printf("Positioning error: %2.3f \n",sqrt(deltaX*deltaX+deltaY*deltaY));
+    //   printf("Positioning error: %2.3f \n",sqrt(deltaX*deltaX+deltaY*deltaY));
 }
 
 /******************************************************************************/
@@ -1184,7 +1187,7 @@ string CIri2Controller::pathFind( int xStart, int yStart,
     n0=new node(xStart, yStart, 0, 0);
     n0->updatePriority(xFinish, yFinish);
     pq[pqi].push(*n0);
-    // open_nodes_map[x][y]=n0->getPriority(); // mark it on the open nodes map
+    // open_nodes_map[x][y]=n0->getPriority(); // mark it on the open nodes map <- EPIC BUG
 
     // A* search
     while(!pq[pqi].empty())
@@ -1283,7 +1286,7 @@ string CIri2Controller::pathFind( int xStart, int yStart,
     return ""; // no route found
 }
 
-/******************************************************************************/
+/*This function takes a double pointer and prints the map that it should store of size n x m*/
 /******************************************************************************/
 
 void CIri2Controller::PrintMap ( int** print_map )
@@ -1314,14 +1317,20 @@ void CIri2Controller::PrintMap ( int** print_map )
     }
     /* DEBUG */
 }
+
+/*
+ * This function get the x from the objective nest, which can be the assigned base or a base that needs help
+ * */
 int CIri2Controller::getObjectiveNestX(){
-    printf("Second call");
     int base=getObjectiveBase();
     printf("objective nest x");
     printf("is %i \n",m_basesToCoordinates[base][0]);
     return m_basesToCoordinates[base][0];
 
 }
+/*
+ * This function get the y from the objective nest, which can be the assigned base or a base that needs help
+ * */
 int CIri2Controller::getObjectiveNestY(){
     printf("third call");
     int base=getObjectiveBase();
@@ -1329,6 +1338,10 @@ int CIri2Controller::getObjectiveNestY(){
     printf("is %i \n",m_basesToCoordinates[base][1]);
     return m_basesToCoordinates[base][1];
 }
+/*
+ * this function takes an x and an y assuming it is a nest position, finds the nearest nest based on the light sensor
+ * and stores it in the array that stores bases and coordinates.
+ * */
 void CIri2Controller::identifyAndStoreNest(int x, int y){
     // Asumme Path Planning is done
     m_nPathPlanningDone = 0;
@@ -1353,13 +1366,17 @@ void CIri2Controller::identifyAndStoreNest(int x, int y){
     }
 
     if(nearestBase>-1&&m_basesToCoordinates[nearestBase][2]==0){
-        printf("Gonna identify base, ");
+        printf("Going to identify base, ");
         printf(" identified base is: %i with x: %i and y %i \n",nearestBase,x,y);
         m_basesToCoordinates[nearestBase][0]=x;
         m_basesToCoordinates[nearestBase][1]=y;
         m_basesToCoordinates[nearestBase][2]=1;//base has been discovered
     }
 }
+/*
+ * This function returns the objective base code that identifies a base that needs help or the assigned base
+ *
+ * */
 
 int CIri2Controller::getObjectiveBase(){
     int base=assignedBases[m_robotIndex];
