@@ -2,10 +2,13 @@
 %%%%%%%%%%%%%%%% EXTRA %%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-NUMBER OF ROBOTS								= 1
+NUMBER OF ROBOTS								= 2
 ROBOT 1: X POSITION (meters)		= 0.075
 ROBOT 1: Y POSITION (meters)		= -0.075
 ROBOT 1: ORIENTATION (radians) 	= 0.0
+ROBOT 2: X POSITION (meters)		= 0.0
+ROBOT 2: Y POSITION (meters)		= 0.0
+ROBOT 2: ORIENTATION (radians) 	= 0.0
 WRITE TO FILE (0 No, 1 YES )		= 1
 RUN TIME													= 10000
 

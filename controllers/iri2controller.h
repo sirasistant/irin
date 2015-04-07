@@ -88,6 +88,7 @@ private:
     int m_nPreyGridX;
     int m_nPreyGridY;
     int m_nPathPlanningDone;
+    bool finishedPath;
 
 	/* Functions */
 	void ExecuteBehaviors   ( void );

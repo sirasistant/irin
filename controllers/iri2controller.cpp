@@ -54,7 +54,7 @@ static int dx[dir]={1, 1, 0, -1, -1, -1, 0, 1};
 static int dy[dir]={0, 1, 1, 1, 0, -1, -1, -1};
 
 #define ERROR_DIRECTION 0.05
-#define ERROR_POSITION  0.02
+#define ERROR_POSITION  0.05
 #define PI 3.1415926535
 
 using namespace std;
@@ -859,7 +859,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
     {
 
 
-
+        finishedPath=false;
         m_nPathPlanningStops=0;
         m_fActivationTable[un_priority][2] = 1;
         printf("base %i ",getObjectiveBase());
@@ -912,12 +912,15 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         printf("STOPS: %d\n", m_nPathPlanningStops);
         /* DEBUG */
         printf("hola4");
+        fflush(stdout);
         /* Define vector of desired positions. One for each changing direction */
         m_vPositionsPlanning = new dVector2[m_nPathPlanningStops];
 
         /* Calc increment of position, correlating grid and metrics */
         double fXmov = mapLengthX/mapGridX;
         double fYmov = mapLengthY/mapGridY;
+        printf("hola5");
+        fflush(stdout);
         /* Get actual position */
         dVector2 actualPos;
         //actualPos.x = robotStartGridX * fXmov;
@@ -927,6 +930,8 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* Fill vector of desired positions */
         int stop = 0;
         int counter = 0;
+        printf("hola5");
+        fflush(stdout);
         /* Check the route and obtain the positions*/
         for (int i = 1 ; i < route.length() ; i++)
         {
@@ -946,7 +951,8 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
                 /* Update position for next stop */
                 actualPos.x = m_vPositionsPlanning[stop].x;
                 actualPos.y = m_vPositionsPlanning[stop].y;
-
+                printf("hola6");
+                fflush(stdout);
                 /* Increment stop */
                 stop++;
                 /* reset counter */
@@ -955,6 +961,8 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
             /* If we are in the last update, calc last movement */
             if (i==(route.length()-1))
             {
+                printf("hola7");
+                fflush(stdout);
                 /* Increment counter */
                 counter++;
                 /* Obtain the direction char */
@@ -983,6 +991,8 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* DEBUG */
         if(route.length()>0)
         {
+            printf("hola8");
+            fflush(stdout);
             int j; char c;
             int x=xA;
             int y=yA;
@@ -1040,6 +1050,8 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
         /* END DEBUG */
 
         m_nPathPlanningDone = 1;
+        printf("hola9");
+        fflush(stdout);
     }
 }
 
@@ -1050,7 +1062,7 @@ void CIri2Controller::PathPlanning ( unsigned int un_priority )
 void CIri2Controller::GoGoal ( unsigned int un_priority )
 {
 
-    if ( ((m_nNestFound * fBattToForageInhibitor) == 1 ) && ( (m_nPreyFound *  fBattToForageInhibitor )== 1 ) )
+    if ( ((m_nNestFound * fBattToForageInhibitor) == 1 ) && ( (m_nPreyFound *  fBattToForageInhibitor )== 1 ) && !finishedPath)
     {
         //   printf("Going goal \n");
         /* Enable Inhibitor to Forage */
@@ -1059,8 +1071,11 @@ void CIri2Controller::GoGoal ( unsigned int un_priority )
         /* If something not found at the end of planning, reset plans */
         if (m_nState >= m_nPathPlanningStops )
         {
+            finishedPath=true;
+            printf("shit nigga, reset \n");
             //  m_nNestFound  = 0;
             //  m_nNestFound  = 0;
+
             m_nState      = 0;
             return;
         }
@@ -1136,7 +1151,7 @@ void CIri2Controller::CalcPositionAndOrientation (double *f_encoder)
     while(m_fOrientation > 2*M_PI) m_fOrientation -= 2*M_PI;
     double deltaX=m_vPosition.x -m_pcEpuck->GetPosition().x;
     double deltaY=m_vPosition.y -m_pcEpuck->GetPosition().y;
-    printf("Positioning error: %2.3f \n",sqrt(deltaX*deltaX+deltaY*deltaY));
+ //   printf("Positioning error: %2.3f \n",sqrt(deltaX*deltaX+deltaY*deltaY));
 }
 
 /******************************************************************************/
